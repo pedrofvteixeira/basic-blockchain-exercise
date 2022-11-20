@@ -30,15 +30,20 @@ func setup(params *common.Params) {
 func Start(params *common.Params) {
 	setup(params)
 
-	root := router.Group("/")
+	r := router.Group("/")
 	{
-		root.GET("/blocks", getAllBlocks)
-		root.GET("/blocks/:hash", getBlockByHash)
-		root.GET("/tx/:from/:to/:amount", postTx) // TODO change to POST
+		r.GET("/", getStatus)
+		r.GET("/blocks", getAllBlocks)
+		r.GET("/blocks/:hash", getBlockByHash)
+		r.GET("/tx/:from/:to/:amount", postTx) // TODO change to POST
 	}
 
 	log.Info().Msgf("webapp listening on port %d", port)
 	router.Run(strconv.Itoa(port))
+}
+
+func getSatus(ctx *gin.Context) {
+	ctx.String(http.StatusOK, "ok")
 }
 
 func getAllBlocks(ctx *gin.Context) {
