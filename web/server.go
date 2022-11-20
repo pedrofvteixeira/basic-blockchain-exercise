@@ -18,6 +18,7 @@ var port int
 
 func setup(params *common.Params) {
 
+	gin.SetMode(gin.ReleaseMode)
 	if params.Verbose {
 		gin.SetMode(gin.DebugMode)
 	}
