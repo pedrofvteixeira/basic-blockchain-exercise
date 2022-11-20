@@ -2,7 +2,6 @@ package core
 
 import (
 	"blockchain/common"
-	"fmt"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -17,7 +16,7 @@ func init() {
 	if len(ledger) == 0 {
 		genesis := Block{
 			make([]Tx, 0),
-			fmt.Sprintf("%s", common.AsHash("")),
+			string(common.AsHash("").Sum(nil)),
 			"",
 		}
 
