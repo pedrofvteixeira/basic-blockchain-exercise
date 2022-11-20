@@ -42,7 +42,7 @@ func Start(params *common.Params) {
 	router.Run(strconv.Itoa(port))
 }
 
-func getSatus(ctx *gin.Context) {
+func getStatus(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "ok")
 }
 
