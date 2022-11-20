@@ -26,10 +26,15 @@ var txPerBlock int
 var currentBlock Block
 
 func setup(params *common.Params) {
+
 	blockTimeMillis = params.BlockTimeMillis
 	txPerBlock = params.TxPerBlock
 
-	currentBlock = Block{}
+	currentBlock = Block{
+		make([]Tx, 0),
+		"",
+		getLedgerLastBlock().Hash,
+	}
 }
 
 func Start(params *common.Params) {
@@ -63,6 +68,7 @@ func GetBlocks() (bool, []Block) {
 
 func AddTx(tx Tx) bool {
 	if len(currentBlock.Txs) >= txPerBlock {
+		log.Info().Msgf("current block has reached max tx per block of %d", txPerBlock)
 		err := closeBlock()
 		if err != nil {
 			log.Error().Msgf("error putting tx %s in currentBlock %s", tx, currentBlock, err)
@@ -83,10 +89,17 @@ func getBlockTxsAsByteArray() []byte {
 }
 
 func closeBlock() error {
-	hash := common.AsHash(currentBlock.Previous).Sum(getBlockTxsAsByteArray())
-	currentBlock.Hash = string(hash)
 
-	log.Info().Msgf("closing block %s", currentBlock.Hash)
+	log.Debug().Msgf("current block size is %d", len(currentBlock.Txs))
+
+	if len(currentBlock.Txs) == 0 {
+		log.Debug().Msgf("keeping block with zero txs open")
+		return nil // does not make sense to close empty blocks
+	}
+
+	currentBlock.Hash = asString(asHash(currentBlock.Previous), getBlockTxsAsByteArray())
+
+	log.Info().Msgf("closing block %s", currentBlock)
 	err := putBlockInLedger(currentBlock)
 	if err != nil {
 		log.Error().Msgf("error getting open block Txs", err)
@@ -95,7 +108,7 @@ func closeBlock() error {
 
 	// open up a new block
 	currentBlock = Block{
-		make([]Tx, txPerBlock),
+		make([]Tx, 0),
 		"",
 		getLedgerLastBlock().Hash,
 	}

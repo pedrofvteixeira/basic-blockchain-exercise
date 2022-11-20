@@ -10,6 +10,7 @@ import (
 	"blockchain/core"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -32,18 +33,19 @@ func Start(params *common.Params) {
 
 	r := router.Group("/")
 	{
-		r.GET("/", getStatus)
+		r.GET("/", redirect)
 		r.GET("/blocks", getAllBlocks)
 		r.GET("/blocks/:hash", getBlockByHash)
 		r.GET("/tx/:from/:to/:amount", postTx) // TODO change to POST
 	}
 
 	log.Info().Msgf("webapp listening on port %d", port)
-	router.Run(strconv.Itoa(port))
+	router.Run(":" + strconv.Itoa(port))
 }
 
-func getStatus(ctx *gin.Context) {
-	ctx.String(http.StatusOK, "ok")
+func redirect(ctx *gin.Context) {
+	location := url.URL{Path: "/blocks"}
+	ctx.Redirect(http.StatusFound, location.RequestURI())
 }
 
 func getAllBlocks(ctx *gin.Context) {
@@ -60,7 +62,7 @@ func postTx(ctx *gin.Context) {
 
 	amountVal, err := strconv.ParseInt(ctx.Param("amount"), 10, 64)
 	if err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -75,19 +77,16 @@ func postTx(ctx *gin.Context) {
 }
 
 func reply(ctx *gin.Context, ok bool, content any) {
-	if !ok {
-		ctx.String(http.StatusInternalServerError, "{\"result\": \"nok\"}")
-
-	} else if content == nil {
-		ctx.String(http.StatusOK, "{\"result\": \"ok\"}")
+	if content == nil {
+		ctx.JSON(http.StatusOK, gin.H{"result": ok})
 
 	} else {
 
-		out, err2 := json.Marshal(content)
-		if err2 != nil {
-			ctx.String(http.StatusInternalServerError, err2.Error())
+		out, err := json.Marshal(content)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		} else {
-			ctx.String(http.StatusOK, string(out))
+			ctx.Writer.Write(out)
 		}
 	}
 }

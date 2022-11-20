@@ -1,7 +1,6 @@
 package core
 
 import (
-	"blockchain/common"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -14,9 +13,10 @@ var ledger []Block = make([]Block, 0)
 func init() {
 	// ledger is never empty
 	if len(ledger) == 0 {
+
 		genesis := Block{
 			make([]Tx, 0),
-			string(common.AsHash("").Sum(nil)),
+			string(asString(nil, []byte("genesis"))),
 			"",
 		}
 

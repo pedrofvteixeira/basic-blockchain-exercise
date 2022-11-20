@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	DefaultTxPerBlock      int  = 2 ^ 4 // number of txs that fill up a block
-	DefaultBlockTimeMillis int  = 30000 // 30 seconds for open block
+	DefaultTxPerBlock      int  = 10    // number of txs that fill up a block
+	DefaultBlockTimeMillis int  = 60000 // 60 seconds for open block
 	DefaultVerbose         bool = false
 	DefaultPort            uint = 8080
 )
