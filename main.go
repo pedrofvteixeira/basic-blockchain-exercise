@@ -15,11 +15,10 @@ func main() {
 	p := common.ParseParams()
 
 	setup(p)
-	core.Start(p)
-	web.Start(p)
+	start(p)
 }
 
-func setup(params *common.Params) {
+func setup(params common.Params) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{
 		Out:        os.Stdout,
 		NoColor:    false,
@@ -29,4 +28,12 @@ func setup(params *common.Params) {
 	if params.Verbose {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
+}
+
+func start(p common.Params) {
+	log.Info().Msg("starting core...")
+	core.Start(p.TxPerBlock, p.BlockTimeMillis)
+
+	log.Info().Msg("starting web...")
+	web.Start(p.Port, p.Verbose)
 }

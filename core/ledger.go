@@ -6,17 +6,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// TODO persistency
-
-var ledger []Block = make([]Block, 0)
+var ledger []Block = make([]Block, 0) // TODO actual persistency
 
 func init() {
-	// ledger is never empty
+	// ledger must never be empty
 	if len(ledger) == 0 {
 
 		genesis := Block{
 			make([]Tx, 0),
-			string(asString(nil, []byte("genesis"))),
+			asHexString(nil, nil),
 			"",
 		}
 

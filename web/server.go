@@ -1,7 +1,7 @@
 package web
 
 import (
-	"blockchain/common"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 
@@ -15,32 +15,31 @@ import (
 )
 
 var router *gin.Engine
-var port int
 
-func setup(params *common.Params) {
+func setup(verbose bool) {
 
 	gin.SetMode(gin.ReleaseMode)
-	if params.Verbose {
+	if verbose {
 		gin.SetMode(gin.DebugMode)
 	}
 
-	port = int(params.Port)
 	router = gin.Default()
 }
 
-func Start(params *common.Params) {
-	setup(params)
+func Start(port int, verbose bool) {
+	setup(verbose)
 
-	r := router.Group("/")
+	router.Group("/")
 	{
-		r.GET("/", redirect)
-		r.GET("/blocks", getAllBlocks)
-		r.GET("/blocks/:hash", getBlockByHash)
-		r.GET("/tx/:from/:to/:amount", postTx) // TODO change to POST
+		router.GET("/", redirect)
+		router.GET("/blocks", getAllBlocks)
+		router.GET("/blocks/:hash", getBlockByHash)
+		router.GET("/tx/:from/:to/:amount", postTx) // TODO change to POST
 	}
 
-	log.Info().Msgf("webapp listening on port %d", port)
-	router.Run(":" + strconv.Itoa(port))
+	log.Info().Msgf("starting http server, listening on port %d...", port)
+	router.Run(fmt.Sprintf(":%d", port))
+	log.Info().Msg("http server started")
 }
 
 func redirect(ctx *gin.Context) {
@@ -60,7 +59,7 @@ func getBlockByHash(ctx *gin.Context) {
 
 func postTx(ctx *gin.Context) {
 
-	amountVal, err := strconv.ParseInt(ctx.Param("amount"), 10, 64)
+	amount, err := strconv.ParseInt(ctx.Param("amount"), 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -69,7 +68,7 @@ func postTx(ctx *gin.Context) {
 	newTx := core.Tx{
 		From:   ctx.Param("from"),
 		To:     ctx.Param("to"),
-		Amount: uint64(amountVal),
+		Amount: uint64(amount),
 	}
 
 	ok := core.AddTx(newTx)

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"blockchain/common"
 	"encoding/json"
 	"fmt"
 
@@ -21,30 +20,28 @@ type Block struct {
 	Previous string `json:"previous"`
 }
 
-var blockTimeMillis int
-var txPerBlock int
+var maxTxPerBlock int
 var currentBlock Block
 
-func setup(params *common.Params) {
+func setup(txPerBlock int, blockTimeMillis int) {
 
-	blockTimeMillis = params.BlockTimeMillis
-	txPerBlock = params.TxPerBlock
+	maxTxPerBlock = txPerBlock
 
 	currentBlock = Block{
 		make([]Tx, 0),
 		"",
 		getLedgerLastBlock().Hash,
 	}
-}
-
-func Start(params *common.Params) {
-	setup(params)
 
 	blockCron := cron.New()
 	cronTimer := fmt.Sprintf("@every %dms", blockTimeMillis)
 	log.Debug().Msgf("block close set at ", cronTimer)
 	blockCron.AddFunc(cronTimer, func() { closeBlock() })
 	blockCron.Start()
+}
+
+func Start(txPerBlock int, blockTimeMillis int) {
+	setup(txPerBlock, blockTimeMillis)
 }
 
 func GetBlock(hash string) (bool, Block) {
@@ -67,8 +64,8 @@ func GetBlocks() (bool, []Block) {
 }
 
 func AddTx(tx Tx) bool {
-	if len(currentBlock.Txs) >= txPerBlock {
-		log.Info().Msgf("current block has reached max tx per block of %d", txPerBlock)
+	if len(currentBlock.Txs) >= maxTxPerBlock {
+		log.Info().Msgf("current block has reached max tx per block of %d", maxTxPerBlock)
 		err := closeBlock()
 		if err != nil {
 			log.Error().Msgf("error putting tx %s in currentBlock %s", tx, currentBlock, err)
@@ -97,7 +94,7 @@ func closeBlock() error {
 		return nil // does not make sense to close empty blocks
 	}
 
-	currentBlock.Hash = asString(asHash(currentBlock.Previous), getBlockTxsAsByteArray())
+	currentBlock.Hash = asHexString(asHash(currentBlock.Previous), getBlockTxsAsByteArray())
 
 	log.Info().Msgf("closing block %s", currentBlock)
 	err := putBlockInLedger(currentBlock)

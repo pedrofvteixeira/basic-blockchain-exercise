@@ -9,14 +9,14 @@ const (
 	DefaultTxPerBlock      int  = 10    // number of txs that fill up a block
 	DefaultBlockTimeMillis int  = 60000 // 60 seconds for open block
 	DefaultVerbose         bool = false
-	DefaultPort            uint = 8080
+	DefaultPort            int  = 8080
 )
 
 type Params struct {
 	TxPerBlock      int
 	BlockTimeMillis int
 	Verbose         bool
-	Port            uint
+	Port            int
 }
 
 func init() {
@@ -25,18 +25,18 @@ func init() {
 	}
 }
 
-func ParseParams() *Params {
+func ParseParams() Params {
 
 	var params Params
 
 	flag.BoolVar(&params.Verbose, "verbose", DefaultVerbose, "True to output all request, logic and balance information .")
 	flag.IntVar(&params.TxPerBlock, "txPerBlock", DefaultTxPerBlock, "Specify max. amount of tx that fill up a block.")
 	flag.IntVar(&params.BlockTimeMillis, "blockTimeMillis", DefaultBlockTimeMillis, "Specify max. amount for an open block in millis.")
-	flag.UintVar(&params.Port, "port", DefaultPort, "Webapp port")
+	flag.IntVar(&params.Port, "port", DefaultPort, "Webapp port")
 
 	flag.Parse()
 
-	return &params
+	return params
 }
 
 func printFlagUsage(version string) {

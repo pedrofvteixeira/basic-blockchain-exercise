@@ -13,11 +13,14 @@ func asHash(s string) hash.Hash {
 	return h
 }
 
-func asString(h hash.Hash, bytes []byte) string {
+func asHexString(h hash.Hash, bytes []byte) string {
 	if h == nil {
-		h = asHash("")
+		s := ""
+		if bytes != nil {
+			s = string(bytes)
+		}
+		h = asHash(s)
 	}
 
-	h.Write(bytes)
 	return hex.EncodeToString(h.Sum(nil))
 }
