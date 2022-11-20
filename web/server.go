@@ -1,4 +1,4 @@
-package adapters
+package web
 
 import (
 	"blockchain/common"
